@@ -1,5 +1,7 @@
 package com.example.xardkor
 
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +16,8 @@ import kotlinx.android.synthetic.main.list_item.view.*
 
 class ListFragment: Fragment() {
 
+    private lateinit var dbHelper: MainActivity.DBHelper
+
     private lateinit var adapter: MapPointsAdapter
 
     override fun onCreateView(
@@ -25,12 +29,34 @@ class ListFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        dbHelper = MainActivity.DBHelper(activity!!.applicationContext)
         adapter = MapPointsAdapter()
         recycler.adapter = adapter
         recycler.layoutManager = LinearLayoutManager(this.context)
 
-        adapter.dataset = listOf("Absolut", "Beee", "cxsfC")
+        adapter.dataset = getDataFromDB()
         adapter.notifyDataSetChanged()
+    }
+
+    private fun getDataFromDB() : List<String> {
+        val list = ArrayList<String>()
+        dbHelper?.let {
+            val db = it.writableDatabase
+            val cursor = db.query("mappoint", null, null, null, null, null, null)
+
+            if (cursor.moveToFirst()) {
+                var latID = cursor.getColumnIndex("lat")
+                var lngID = cursor.getColumnIndex("lng")
+                var weatherID = cursor.getColumnIndex("weather")
+
+                do {
+                    val str = "Lat: ${cursor.getString(latID)} Lng: ${cursor.getString(lngID)} Weather: ${cursor.getString(weatherID)}"
+                    list.add(str)
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
+        }
+        return list
     }
 
     class MapPointsAdapter() :
