@@ -4,6 +4,8 @@ import android.os.Bundle
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.MarkerOptions
 
 class MapFragment : SupportMapFragment(), OnMapReadyCallback {
 
@@ -16,6 +18,18 @@ class MapFragment : SupportMapFragment(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+
+        setLongMapClick(googleMap)
     }
+
+    private fun setLongMapClick(googleMap: GoogleMap) {
+        googleMap.setOnMapLongClickListener { latLng ->
+            googleMap.addMarker(MarkerOptions()
+                .position(latLng)
+                .title("Dropped Pin")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.android)))
+        }
+    }
+
 
 }
