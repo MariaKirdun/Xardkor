@@ -10,8 +10,14 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import org.json.JSONArray
+import org.json.JSONObject
 
 class MapFragment : SupportMapFragment(), OnMapReadyCallback {
+
+    companion object {
+        const val API_KEY = "2e75bf3f5fb89a60510c91c6a97cef82"
+    }
 
     private lateinit var dbHelper: MainActivity.DBHelper
 
@@ -39,10 +45,11 @@ class MapFragment : SupportMapFragment(), OnMapReadyCallback {
 
     private fun setLongMapClick(googleMap: GoogleMap) {
         googleMap.setOnMapLongClickListener { latLng ->
-            addToDB(latLng, "weather")
+            val weather = getWeather(latLng)
+            addToDB(latLng, weather)
             googleMap.addMarker(MarkerOptions()
                 .position(latLng)
-                .title("Dropped Pin")
+                .title(weather)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.android)))
         }
     }
@@ -80,6 +87,19 @@ class MapFragment : SupportMapFragment(), OnMapReadyCallback {
             cursor.close()
         }
         return list
+    }
+
+
+    private fun getWeather(latLng: LatLng): String {
+        val url = "https://api.openweathermap.org/data/2.5/weather?lat=${latLng.latitude}&lon=${latLng.longitude}&appid=$API_KEY"
+
+        val getRequest = HttpGetRequest()
+        val result = getRequest.execute(url).get()
+
+        val jsonReader = JSONObject(result)
+        val arrayWeather = jsonReader.getJSONArray("weather")
+        val objJson = arrayWeather.getJSONObject(0)
+        return objJson.getString("main")
     }
 
 }
